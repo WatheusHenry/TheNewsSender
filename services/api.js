@@ -36,11 +36,15 @@ export async function getNewsSummary(query) {
     .join("\n\n");
 
   // 3. Cria o prompt para o LLM
+
+  const localLLMUrl = process.env.NEXT_PUBLIC_LOCAL_LLM_URL;
   const prompt = `Com base nas seguintes notícias, forneça um resumo formatado em Markdown: ${articlesText}`;
-  const llmResponse = await fetch("http://127.0.0.1:1234/v1/chat/completions", {
+
+  const llmResponse = await fetch(localLLMUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+
       model: "qwen2.5-7b-instruct-1m", 
       messages: [
         {
