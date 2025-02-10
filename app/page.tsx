@@ -48,7 +48,7 @@ export default function Home() {
         summaries.push(`## 🐦 Twitter\n\n${tweetsSummary}`);
       }
 
-      setTweets(fetchedTweets);
+      // setTweets(fetchedTweets);
       setSummary(summaries.join("\n\n---\n\n"));
     } catch (error) {
       console.error("Erro ao buscar resumo:", error);
@@ -182,7 +182,7 @@ export default function Home() {
         </motion.div>
       )}
 
-      {tweets.length > 0 && (
+      {/* {tweets.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -214,7 +214,7 @@ export default function Home() {
             ))}
           </div>
         </motion.div>
-      )}
+      )} */}
     </section>
   );
 }
