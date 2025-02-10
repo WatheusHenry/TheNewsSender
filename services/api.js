@@ -11,17 +11,22 @@ export async function getNewsSummary(query) {
     throw new Error("Parâmetro 'query' é obrigatório.");
   }
 
-  // Use uma variável de ambiente exposta ao client (lembre-se dos riscos de expor chaves sensíveis)
-  const NEWS_API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-  if (!NEWS_API_KEY) {
-    throw new Error("API key do NewsAPI não configurada.");
+  // Use uma variável de ambiente para armazenar a API key do GNews
+  const GNEWS_API_KEY = process.env.NEXT_PUBLIC_GNEWS_API_KEY;
+  if (!GNEWS_API_KEY) {
+    throw new Error("API key do GNews não configurada.");
   }
 
-  // 1. Busca de notícias via NewsAPI
-  const newsApiUrl = `https://newsapi.org/v2/everything?qInTitle=${encodeURIComponent(query)}&language=pt&apiKey=${NEWS_API_KEY}`;
-  const newsResponse = await fetch(newsApiUrl);
-  const newsData = await newsResponse.json();
+  // 1. Busca de notícias via GNews API
+  const gnewsApiUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=pt&token=${GNEWS_API_KEY}`;
+  
+  const newsResponse = await fetch(gnewsApiUrl);
+  if (!newsResponse.ok) {
+    const errorText = await newsResponse.text();
+    throw new Error("Erro ao buscar notícias: " + errorText);
+  }
 
+  const newsData = await newsResponse.json();
   if (!newsData.articles || newsData.articles.length === 0) {
     throw new Error("Nenhuma notícia encontrada para essa pesquisa.");
   }
@@ -35,17 +40,15 @@ export async function getNewsSummary(query) {
     )
     .join("\n\n");
 
-  // 3. Cria o prompt para o LLM
-
+  // 3. Chama o LLM para gerar um resumo
   const localLLMUrl = process.env.NEXT_PUBLIC_LOCAL_LLM_URL;
-  const prompt = `Com base nas seguintes notícias, forneça um resumo formatado em Markdown: ${articlesText}`;
+  const prompt = `Com base nas seguintes notícias, forneça um resumo formatado em Markdown bem formatado: ${articlesText}`;
 
   const llmResponse = await fetch(localLLMUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-
-      model: "qwen2.5-7b-instruct-1m", 
+      model: "qwen2.5-7b-instruct-1m",
       messages: [
         {
           role: "user",
