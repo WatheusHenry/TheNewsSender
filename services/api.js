@@ -18,7 +18,7 @@ export async function getNewsSummary(query) {
   }
 
   // 1. Busca de notícias via GNews API
-  const gnewsApiUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=pt&token=${GNEWS_API_KEY}`;
+  const gnewsApiUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=pt&sortby=publishedAt&token=${GNEWS_API_KEY}`;
   
   const newsResponse = await fetch(gnewsApiUrl);
   if (!newsResponse.ok) {
