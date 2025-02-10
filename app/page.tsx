@@ -47,8 +47,6 @@ export default function Home() {
         fetchedTweets = await getTweets(query);
         summaries.push(`## 🐦 Twitter\n\n${tweetsSummary}`);
       }
-
-      // setTweets(fetchedTweets);
       setSummary(summaries.join("\n\n---\n\n"));
     } catch (error) {
       console.error("Erro ao buscar resumo:", error);
