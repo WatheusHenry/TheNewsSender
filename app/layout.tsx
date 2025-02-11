@@ -52,7 +52,7 @@ export default function RootLayout({
             <div className="mt-8 flex justify-center">
               <Snippet hideCopyButton hideSymbol variant="bordered">
                 <span>
-                  Receba essas informações via{" "}
+                  Em breve você poderá receber essas informações via{" "}
                   <Code color="primary">e-mail</Code>
                 </span>
               </Snippet>

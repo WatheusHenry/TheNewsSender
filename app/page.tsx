@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown";
 import { Tooltip } from "@heroui/tooltip";
 import { getTweets, getTweetsSummary } from "@/services/twitterApi";
 import { Skeleton } from "@heroui/skeleton";
+import { Chip } from "@heroui/chip";
 
 interface NewsSummary {
   sourceName: string;
@@ -185,13 +186,9 @@ export default function Home() {
         >
           {loading ? "Pesquisando..." : "Pesquisar"}
         </Button>
-        <Button
-
-          color="primary"
-
-        >
-          Receber resumo
-        </Button>
+        <Tooltip placement="right" showArrow content="Em breve 😉">
+          <Button color="primary">Receber resumo</Button>
+        </Tooltip>
       </div>
 
       {/* Grid de resumos/skeletons */}
@@ -235,6 +232,13 @@ export default function Home() {
                       <Copy size={18} />
                     </button>
                   </div>
+                  <div className="flex flex-wrap gap-2 px-3 pb-3">
+                    {summary.tags.map((tag) => (
+                      <Chip key={`${tag}-${index}`} size="sm">
+                        {tag}
+                      </Chip>
+                    ))}
+                  </div>
                   <p className="text-sm text-gray-600 mb-2 px-3">
                     📅 {summary.date || "Data não disponível"} | 🔗{" "}
                     <a
@@ -247,7 +251,7 @@ export default function Home() {
                     </a>
                   </p>
                   <ReactMarkdown className="prose px-3">
-                    {summary.summary}
+                    {summary.content}
                   </ReactMarkdown>
                 </div>
               ) : (

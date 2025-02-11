@@ -8,7 +8,7 @@ export async function getNewsSummary(query, onUpdate) {
     throw new Error("API key do GNews não configurada.");
   }
 
-  const gnewsApiUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=pt&sortby=publishedAt&token=${GNEWS_API_KEY}`;
+  const gnewsApiUrl = `https://gnews.io/api/v4/top-headlines?q=${encodeURIComponent(query)}&max=3&lang=pt&sortby=publishedAt&token=${GNEWS_API_KEY}`;
   const newsResponse = await fetch(gnewsApiUrl);
 
   if (!newsResponse.ok) {
@@ -43,8 +43,7 @@ export async function getNewsSummary(query, onUpdate) {
       "date": "${formatDate(article.publishedAt)}",
       "sourceName": "${article.source?.name || "Fonte não informada"}",
       "sourceUrl": "${article.source?.url || "Fonte não informada"}",
-      "summary": "Resuma o conteúdo ${article.description} de forma coesa, se caso não tenha conteúdo, retorne 'Sem conteúdo disponível':",
-      "content": "${article.description || "Sem descrição disponível"}",
+      "content": "${article.content || "Sem descrição disponível"}",
       "tags": "Se necessário, inclua tags relacionadas"
 
     }
