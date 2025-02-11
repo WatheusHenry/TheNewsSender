@@ -175,20 +175,28 @@ export default function Home() {
       </div>
 
       {/* Botão de pesquisa */}
-      <div>
+      <div className="flex  gap-2">
         <Button
           isLoading={loading}
           color="primary"
+          variant="flat"
           onPress={handleSearch}
           disabled={loading}
         >
           {loading ? "Pesquisando..." : "Pesquisar"}
         </Button>
+        <Button
+
+          color="primary"
+
+        >
+          Receber resumo
+        </Button>
       </div>
 
       {/* Grid de resumos/skeletons */}
       {(newsSummaries.length > 0 || loading) && (
-        <div className="flex flex-col items-center justify-center mt-4 gap-10">
+        <div className="flex w-full flex-col items-center justify-center mt-4 gap-10">
           <h3 className="text-2xl font-bold text-gray-700 dark:text-white">
             Resumos:
           </h3>
