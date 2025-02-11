@@ -29,6 +29,9 @@ export default function Home() {
   const [sources, setSources] = useState({ news: true, twitter: false });
   const [newsSummaries, setNewsSummaries] = useState<NewsSummary[]>([]);
 
+  // Quantidade total de cards esperados
+  const totalCards = 3;
+
   const toggleSource = (source: "news" | "twitter") => {
     setSources((prev) => ({ ...prev, [source]: !prev[source] }));
   };
@@ -36,11 +39,13 @@ export default function Home() {
   const handleSearch = async () => {
     if (!query) return;
     setLoading(true);
-    setNewsSummaries([]);
+    setNewsSummaries([]); // Reinicia os resumos
 
     try {
       if (sources.news) {
+        // Supondo que getNewsSummary atualize os resumos de forma progressiva
         await getNewsSummary(query, (summaries: any[]) => {
+          // Mapeia os dados para a estrutura desejada
           const structuredSummaries = summaries.map((summary) => ({
             title: summary.title,
             date: summary.date,
@@ -51,6 +56,7 @@ export default function Home() {
             tags: summary.tags || [],
             image: summary.image || "",
           }));
+          // Atualiza o estado progressivamente (caso a API retorne dados gradualmente)
           setNewsSummaries(structuredSummaries);
         });
       }
@@ -75,6 +81,7 @@ export default function Home() {
 
   return (
     <section className="flex flex-col m-auto items-center justify-center gap-4">
+      {/* Cabeçalho */}
       <div className="flex flex-col items-center justify-center">
         <img src="/newspaper_1f4f0.png" alt="logo" className="w-20 h-20" />
       </div>
@@ -100,22 +107,22 @@ export default function Home() {
         </span>
       </div>
 
+      {/* Botões de fontes */}
       <div className="flex flex-col justify-center items-center gap-1">
         <span className="text-sm text-gray-500">Fontes das informações:</span>
         <div className="flex gap-1">
           <Tooltip
-            placement="left"
+            placement="top"
             showArrow
-            content="Pesquisas feitas no The News API"
+            content="Pesquisas feitas no GNews API"
           >
             <Button
               isIconOnly
-              className={`w-8 h-8 rounded-lg transition-all duration-200
-      ${
-        sources.news
-          ? "bg-blue-500 border-blue-600 dark:bg-blue-400 dark:border-blue-500"
-          : "bg-white border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
-      }`}
+              className={`w-8 h-8 rounded-lg transition-all duration-200 ${
+                sources.news
+                  ? "bg-blue-500 border-blue-600 dark:bg-blue-400 dark:border-blue-500"
+                  : "bg-white border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
+              }`}
               size="sm"
               onPress={() => toggleSource("news")}
               variant={sources.news ? "flat" : "bordered"}
@@ -128,32 +135,32 @@ export default function Home() {
             </Button>
           </Tooltip>
 
-          <Tooltip
+          {/* <Tooltip
             placement="right"
             showArrow
             content="Pesquisas feitas no X (Twitter)"
           >
             <Button
               isIconOnly
-              className={`p-0 max-w-8 w-8 min-w-8 h-8 rounded-lg transition-all duration-200
-      ${
-        sources.twitter
-          ? "bg-blue-500 border-blue-600 dark:bg-blue-400 dark:border-blue-500"
-          : "bg-white border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
-      }`}
+              className={`p-0 max-w-8 w-8 min-w-8 h-8 rounded-lg transition-all duration-200 ${
+                sources.twitter
+                  ? "bg-blue-500 border-blue-600 dark:bg-blue-400 dark:border-blue-500"
+                  : "bg-white border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
+              }`}
               onPress={() => toggleSource("twitter")}
               variant={sources.twitter ? "flat" : "bordered"}
             >
               <img
                 src="/icons8-x.svg"
-                className="p-0 w-6 h-6 "
+                className="p-0 w-6 h-6"
                 alt="Ícone do Twitter"
               />
             </Button>
-          </Tooltip>
+          </Tooltip> */}
         </div>
       </div>
 
+      {/* Caixa de pesquisa */}
       <div className="flex gap-3 w-1/3">
         <Textarea
           size="md"
@@ -167,6 +174,7 @@ export default function Home() {
         />
       </div>
 
+      {/* Botão de pesquisa */}
       <div>
         <Button
           isLoading={loading}
@@ -177,50 +185,42 @@ export default function Home() {
           {loading ? "Pesquisando..." : "Pesquisar"}
         </Button>
       </div>
-      {loading ? (
-        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-4/5">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="w-full">
-              <Skeleton className="w-full h-40 rounded-lg bg-gray-300" />
-              <div className="mt-3 space-y-2">
-                <Skeleton className="w-3/4 h-6 bg-gray-300" />
-                <Skeleton className="w-1/2 h-4 bg-gray-300" />
-              </div>
-            </div>
-          ))}
-        </motion.div>
-      ) : (
-        newsSummaries.length > 0 && (
-          <div className="flex flex-col items-center justify-center mt-4 gap-10">
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-white">
-              Resumos:
-            </h3>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-4/5"
-            >
-              {newsSummaries.map((news, index) => (
+      {/* Grid de resumos/skeletons */}
+      {(newsSummaries.length > 0 || loading) && (
+        <div className="flex flex-col items-center justify-center mt-4 gap-10">
+          <h3 className="text-2xl font-bold text-gray-700 dark:text-white">
+            Resumos:
+          </h3>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-4/5"
+          >
+            {Array.from({ length: totalCards }).map((_, index) => {
+              const summary = newsSummaries[index];
+              return summary ? (
+                // Card real
                 <div
                   key={index}
                   className="p-4 bg-white mx-auto shadow-md rounded-lg border border-gray-300 dark:bg-neutral-800 dark:border-stone-700"
                 >
-                  {news.image && (
+                  {summary.image && (
                     <img
-                      src={news.image}
+                      src={summary.image}
                       alt=""
                       className="m-auto rounded-lg mb-2"
                     />
                   )}
                   <div className="flex justify-between items-center mb-2 p-3">
                     <h2 className="text-lg font-bold text-gray-800 w-4/5 dark:text-white">
-                      {news.title}
+                      {summary.title}
                     </h2>
                     <button
                       onClick={() =>
-                        navigator.clipboard.writeText(news.summary)
+                        navigator.clipboard.writeText(summary.summary)
                       }
                       className="text-gray-500 hover:text-gray-700 p-2 rounded-lg bg-gray-100"
                     >
@@ -228,24 +228,43 @@ export default function Home() {
                     </button>
                   </div>
                   <p className="text-sm text-gray-600 mb-2 px-3">
-                    📅 {news.date || "Data não disponível"} | 🔗{" "}
+                    📅 {summary.date || "Data não disponível"} | 🔗{" "}
                     <a
-                      href={news.sourceUrl}
+                      href={summary.sourceUrl}
                       className="text-blue-500"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {news.sourceName || "Fonte desconhecida"}
+                      {summary.sourceName || "Fonte desconhecida"}
                     </a>
                   </p>
                   <ReactMarkdown className="prose px-3">
-                    {news.summary}
+                    {summary.summary}
                   </ReactMarkdown>
                 </div>
-              ))}
-            </motion.div>
-          </div>
-        )
+              ) : (
+                <div
+                  key={index}
+                  className="p-4 bg-white min-w-full mx-auto shadow-md rounded-lg border border-gray-300 dark:bg-neutral-800 dark:border-stone-700"
+                >
+                  <Skeleton className="w-full h-40 rounded-lg " />
+                  <div className="mt-3 space-y-2">
+                    <Skeleton className="w-full h-6 " />
+                    <Skeleton className="w-1/2 h-4 " />
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Skeleton className="w-3/4 h-4 " />
+                    <Skeleton className="w-3/4 h-4 " />
+                    <Skeleton className="w-3/4 h-4 " />
+                    <Skeleton className="w-3/4 h-4 " />
+                    <Skeleton className="w-3/4 h-4 " />
+                    <Skeleton className="w-2/4 h-4 " />
+                  </div>
+                </div>
+              );
+            })}
+          </motion.div>
+        </div>
       )}
     </section>
   );
