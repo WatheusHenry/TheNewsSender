@@ -20,7 +20,28 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: "https://the-news-sender.vercel.app/",
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: "https://ibb.co/nsPHtz2w",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@watheusHenry",
+    creator: "@watheusHenry",
+  },
 };
+
 
 export const viewport: Viewport = {
   themeColor: [
