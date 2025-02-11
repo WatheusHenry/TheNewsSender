@@ -10,6 +10,7 @@ import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
 import { Snippet } from "@heroui/snippet";
 import { Code } from "@heroui/code";
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: {
@@ -64,6 +65,7 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
+        
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
@@ -91,6 +93,7 @@ export default function RootLayout({
             </footer>
           </div>
         </Providers>
+        <Analytics/>
       </body>
     </html>
   );
