@@ -58,7 +58,7 @@ export async function getNewsSummary(query, onUpdate) {
         "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: "deepseek-coder",
+        model: "anthropic/claude-3.5-sonnet",
         messages: [{ role: "user", content: prompt }],
       }),
     });
