@@ -30,7 +30,8 @@ export async function getNewsSummary(query, onUpdate) {
     });
   };
 
-  const localLLMUrl = process.env.NEXT_PUBLIC_LOCAL_LLM_URL;
+  const DEEPSEEK_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+  const DEEPSEEK_API_KEY = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
   const summaries = [];
 
   for (const article of newsData.articles.slice(0, 3)) {
@@ -45,46 +46,48 @@ export async function getNewsSummary(query, onUpdate) {
       "sourceUrl": "${article.source?.url || "Fonte não informada"}",
       "content": "${article.content || "Sem descrição disponível"}",
       "tags": "Se necessário, inclua tags relacionadas"
-
     }
 
-    **Responda somente em JSON, não inclua explicações ou comentários.não quero quebra de linhas, quero que voce me entregue uma resposta igual essa que eu te pedi.**
+    **Responda somente em JSON, não inclua explicações ou comentários.**
   `;
 
-  const llmResponse = await fetch(localLLMUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "qwen2.5-7b-instruct-1m",
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  
-  if (!llmResponse.ok) {
-    const errorText = await llmResponse.text();
-    console.error("Erro ao chamar o LLM:", errorText);
-    continue;
-  }
-  
-  const llmData = await llmResponse.json();
-  const rawContent = llmData.choices?.[0]?.message?.content.trim();
-  
-  // Remove os delimitadores de código caso existam
-  const cleanedContent = rawContent
-    .replace(/^```(json)?\s*/, '')
-    .replace(/\s*```$/, '')
-    .trim();
-  
-  let jsonResponse;
+    const llmResponse = await fetch(DEEPSEEK_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "deepseek-coder",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
 
-  try {
-    jsonResponse = JSON.parse(cleanedContent);
-    summaries.push(jsonResponse);
+    if (!llmResponse.ok) {
+      const errorText = await llmResponse.text();
+      console.error("Erro ao chamar o DeepSeek:", errorText);
+      continue;
+    }
 
-  } catch (error) {
-    console.error("Erro ao parsear o JSON:", error);
-    continue;
-  }
+    const llmData = await llmResponse.json();
+    const rawContent = llmData.choices?.[0]?.message?.content.trim();
+
+    // Remove os delimitadores de código caso existam
+    const cleanedContent = rawContent
+      .replace(/^```(json)?\s*/, '')
+      .replace(/\s*```$/, '')
+      .trim();
+
+    let jsonResponse;
+
+    try {
+      jsonResponse = JSON.parse(cleanedContent);
+      summaries.push(jsonResponse);
+    } catch (error) {
+      console.error("Erro ao parsear o JSON:", error);
+      continue;
+    }
+
     // Atualiza a interface a cada novo resumo processado
     onUpdate([...summaries]);
   }
