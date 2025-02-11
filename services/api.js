@@ -74,16 +74,16 @@ export async function getNewsSummary(query, onUpdate) {
     const rawContent = llmData.choices?.[0]?.message?.content.trim();
 
     // Remove os delimitadores de código caso existam
-    // const cleanedContent = rawContent
-    //   .replace(/^```(json)?\s*/, '')
-    //   .replace(/\s*```$/, '')
-    //   .trim();
+    const cleanedContent = rawContent
+      .replace(/^```(json)?\s*/, '')
+      .replace(/\s*```$/, '')
+      .trim();
 
     let jsonResponse;
 
     try {
       console.log(llmResponse)
-      jsonResponse = JSON.parse(rawContent);
+      jsonResponse = JSON.parse(cleanedContent);
       summaries.push(jsonResponse);
     } catch (error) {
       console.error("Erro ao parsear o JSON:", error);
