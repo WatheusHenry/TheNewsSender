@@ -58,7 +58,7 @@ export async function getNewsSummary(query, onUpdate) {
         "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "google/gemini-2.0-flash-001",
         messages: [{ role: "user", content: prompt }],
         stream: false // Garante que a resposta venha completa de uma vez
       })
