@@ -58,9 +58,10 @@ export async function getNewsSummary(query, onUpdate) {
         "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3.5-sonnet",
+        model: "deepseek-chat",
         messages: [{ role: "user", content: prompt }],
-      }),
+        stream: false // Garante que a resposta venha completa de uma vez
+      })
     });
 
     if (!llmResponse.ok) {
