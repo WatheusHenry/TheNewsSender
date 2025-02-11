@@ -25,7 +25,7 @@ export async function getNewsSummary(query, onUpdate) {
     if (!dateString) return "Data não disponível";
     return new Date(dateString).toLocaleDateString("pt-BR", {
       day: "2-digit",
-      month: "long",
+      month: "2-digit",
       year: "numeric",
     });
   };
@@ -41,10 +41,12 @@ export async function getNewsSummary(query, onUpdate) {
       "description": "${article.description}",
       "image": "${article.image}",
       "date": "${formatDate(article.publishedAt)}",
-      "source": "${article.source?.name || "Fonte não informada"}",
-      "summary": "Resuma o conteúdo abaixo de forma coesa:",
+      "sourceName": "${article.source?.name || "Fonte não informada"}",
+      "sourceUrl": "${article.source?.url || "Fonte não informada"}",
+      "summary": "Resuma o conteúdo ${article.description} de forma coesa, se caso não tenha conteúdo, retorne 'Sem conteúdo disponível':",
       "content": "${article.description || "Sem descrição disponível"}",
       "tags": "Se necessário, inclua tags relacionadas"
+
     }
 
     **Responda somente em JSON, não inclua explicações ou comentários.não quero quebra de linhas, quero que voce me entregue uma resposta igual essa que eu te pedi.**

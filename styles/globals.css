@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --icon-color: black;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --icon-color: white;
+    }
+  }
+  
