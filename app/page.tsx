@@ -89,7 +89,7 @@ export default function Home() {
 
       <div className="inline-flex text-center justify-center">
         <span className="text-4xl font-bold dark:text-white text-gray-700 mt-2">
-          Receba&nbsp;
+          Pesquise&nbsp;
         </span>
         <RotatingText
           texts={["Notícias", "Atualizações", "Ideias", "Tendências"]}
@@ -104,7 +104,7 @@ export default function Home() {
           rotationInterval={2000}
         />
         <span className="text-4xl font-bold dark:text-white text-gray-700 mt-2">
-          &nbsp;quando quiser&nbsp;
+          &nbsp;e receba quando quiser&nbsp;
         </span>
       </div>
 
