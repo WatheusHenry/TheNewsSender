@@ -232,13 +232,13 @@ export default function Home() {
                       <Copy size={18} />
                     </button>
                   </div>
-                  <div className="flex flex-wrap gap-2 px-3 pb-3">
+{/*                   <div className="flex flex-wrap gap-2 px-3 pb-3">
                     {summary.tags.map((tag) => (
                       <Chip key={`${tag}-${index}`} size="sm">
                         {tag}
                       </Chip>
                     ))}
-                  </div>
+                  </div> */}
                   <p className="text-sm text-gray-600 mb-2 px-3">
                     📅 {summary.date || "Data não disponível"} | 🔗{" "}
                     <a
