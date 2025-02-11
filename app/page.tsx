@@ -1,6 +1,5 @@
 "use client";
 
-// pages/index.jsx
 import { useState } from "react";
 import { Textarea } from "@heroui/input";
 import RotatingText from "@/components/RotatingText";
@@ -12,16 +11,21 @@ import ReactMarkdown from "react-markdown";
 import { Tooltip } from "@heroui/tooltip";
 import { getTweets, getTweetsSummary } from "@/services/twitterApi";
 
+interface NewsSummary {
+  date: string;
+  title: string;
+  summary: string;
+  source: string;
+  content: string; // Adicionando o campo content do JSON
+  tags: string[]; // Adicionando as tags, se necessário
+  image: string;
+}
+
 export default function Home() {
   const [query, setQuery] = useState("");
-  const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
-  const [tweets, setTweets] = useState([]);
-  // Estado para selecionar as fontes ativas
-  const [sources, setSources] = useState({
-    news: true,
-    twitter: false,
-  });
+  const [sources, setSources] = useState({ news: true, twitter: false });
+  const [newsSummaries, setNewsSummaries] = useState<NewsSummary[]>([]);
 
   const toggleSource = (source: "news" | "twitter") => {
     setSources((prev) => ({ ...prev, [source]: !prev[source] }));
@@ -30,49 +34,51 @@ export default function Home() {
   const handleSearch = async () => {
     if (!query) return;
     setLoading(true);
-    setSummary("");
-    setTweets([]); // Limpa tweets antes da busca
+    setNewsSummaries([]);
 
     try {
-      let summaries = [];
-      let fetchedTweets = [];
-
       if (sources.news) {
-        const newsSummary = await getNewsSummary(query);
-        summaries.push(`## 📰 Notícias\n\n${newsSummary}`);
+        await getNewsSummary(query, (summaries: any[]) => {
+          const structuredSummaries = summaries.map((summary) => ({
+            title: summary.title,
+            date: summary.date,
+            source: summary.source,
+            summary: summary.summary,
+            content: summary.content || "Sem conteúdo disponível",
+            tags: summary.tags || [],
+            image: summary.image || "",
+          }));
+          setNewsSummaries(structuredSummaries);
+        });
       }
-
-      if (sources.twitter) {
-        const tweetsSummary = await getTweetsSummary(query);
-        fetchedTweets = await getTweets(query);
-        summaries.push(`## 🐦 Twitter\n\n${tweetsSummary}`);
-      }
-      setSummary(summaries.join("\n\n---\n\n"));
     } catch (error) {
       console.error("Erro ao buscar resumo:", error);
-      setSummary(
-        "Ocorreu um erro: " +
-          (error instanceof Error ? error.message : "Erro desconhecido"),
-      );
+      setNewsSummaries([
+        {
+          title: "Erro",
+          summary: "Ocorreu um erro ao buscar as notícias.",
+          source: "Sistema",
+          date: "",
+          content: "Sem conteúdo disponível",
+          tags: [],
+          image: "",
+        },
+      ]);
     }
 
     setLoading(false);
   };
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(summary);
-  };
 
   return (
-    <section className="flex flex-col m-auto items-center justify-center gap-4 ">
+    <section className="flex flex-col m-auto items-center justify-center gap-4">
       <div className="flex flex-col items-center justify-center">
         <img src="/newspaper_1f4f0.png" alt="logo" className="w-20 h-20" />
       </div>
 
-      <div className="inline-flex text-center justify-center ">
-        <span className="text-4xl/[1.5] font-bold dark:text-white text-gray-700">
+      <div className="inline-flex text-center justify-center">
+        <span className="text-4xl font-bold dark:text-white text-gray-700 mt-2">
           Receba&nbsp;
         </span>
-
         <RotatingText
           texts={["Notícias", "Atualizações", "Idéias", "Tendências"]}
           mainClassName="dark:bg-black bg-white text-4xl font-bold text-sky-500 overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
@@ -85,12 +91,11 @@ export default function Home() {
           transition={{ type: "spring", damping: 30, stiffness: 400 }}
           rotationInterval={2000}
         />
-
-        <span className="text-4xl/[1.5] font-bold dark:text-white text-gray-700">
+        <span className="text-4xl font-bold dark:text-white text-gray-700 mt-2">
           &nbsp;quando quiser&nbsp;
         </span>
       </div>
-      {/* Botões para selecionar fontes */}
+
       <div className="flex flex-col justify-center items-center gap-1">
         <span className="text-sm text-gray-500">Fontes das informações:</span>
         <div className="flex gap-1">
@@ -122,12 +127,7 @@ export default function Home() {
               onPress={() => toggleSource("twitter")}
               variant={sources.twitter ? "flat" : "bordered"}
             >
-              <img
-                src="/icons8-x.svg"
-                color="white"
-                className="p-0 w-6 h-6"
-                alt=""
-              />
+              <img src="/icons8-x.svg" className="p-0 w-6 h-6" alt="" />
             </Button>
           </Tooltip>
         </div>
@@ -136,8 +136,8 @@ export default function Home() {
       <div className="flex gap-3 w-1/3">
         <Textarea
           size="md"
-          description="Escreva o que deseja pesquisar e será entregue um resumo das noticias mais relevantes"
-          placeholder="Insira informações que deseja pesquisar "
+          description="Escreva o que deseja pesquisar e será entregue um resumo das notícias mais relevantes"
+          placeholder="Insira informações que deseja pesquisar"
           variant="faded"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -157,65 +157,49 @@ export default function Home() {
         </Button>
       </div>
 
-      {/* Resumo formatado em HTML */}
-      {summary && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mt-6 p-6 bg-white/80 backdrop-blur-lg rounded-lg shadow-lg w-full border border-gray-300"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-800">Resumo</h2>
-            <button
-              onClick={copyToClipboard}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <Copy size={20} />
-            </button>
-          </div>
+      {newsSummaries.length > 0 && (
+        <div className="flex flex-col items-center justify-center mt-4 gap-10">
+          <h3 className="text-2xl font-bold text-gray-700">Resumos:</h3>
 
-          {/* Renderiza Markdown */}
-          <ReactMarkdown className="prose max-w-none">{summary}</ReactMarkdown>
-        </motion.div>
-      )}
-
-      {/* {tweets.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mt-6 p-6 bg-white/80 backdrop-blur-lg rounded-lg shadow-lg w-full border border-gray-300"
-        >
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            🐦 Tweets Relacionados
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {tweets.map((tweet, index) => (
-              <motion.div
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-4/5 "
+          >
+            {newsSummaries.map((news, index) => (
+              <div
                 key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="p-4 bg-white shadow-md rounded-lg border border-gray-200"
+                className="p-4 bg-white mx-auto  shadow-md rounded-lg border border-gray-300"
               >
-                <p className="text-gray-800">{tweet.text}</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  <span className="font-semibold">Autor ID:</span>{" "}
-                  {tweet.author_id}
+                <img
+                  src={news.image}
+                  alt=""
+                  className=" m-auto rounded-lg mb-2"
+                />
+                <div className="flex justify-between items-center mb-2 p-3">
+                  <h2 className="text-lg font-bold text-gray-800 w-4/5">
+                    {news.title}
+                  </h2>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(news.summary)}
+                    className="text-gray-500 hover:text-gray-700 p-2 rounded-lg bg-gray-100"
+                  >
+                    <Copy size={18} />
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 mb-2 px-3 ">
+                  📅 {news.date || "Data não disponível"} | 🔗{" "}
+                  {news.source || "Fonte desconhecida"}
                 </p>
-                <p className="text-xs text-gray-400">
-                  {new Date(tweet.created_at).toLocaleString()}
-                </p>
-              </motion.div>
+                <ReactMarkdown className="prose px-3">
+                  {news.summary}
+                </ReactMarkdown>
+              </div>
             ))}
-          </div>
-        </motion.div>
-      )} */}
+          </motion.div>
+        </div>
+      )}
     </section>
   );
-}
-function setTweets(fetchedTweets: any) {
-  throw new Error("Function not implemented.");
 }

@@ -1,7 +1,7 @@
 // services/twitterService.js
 
 /**
- * Busca tweets com base no termo pesquisado.
+ * Busca tweets com base no termo pesquisado usando nosso endpoint de proxy.
  * @param {string} query - O termo de pesquisa.
  * @returns {Promise<Array>} - Lista de tweets relevantes.
  * @throws {Error} - Em caso de erro na requisição.
@@ -11,22 +11,8 @@ export async function getTweets(query) {
     throw new Error("Parâmetro 'query' é obrigatório.");
   }
 
-  const TWITTER_BEARER_TOKEN = process.env.NEXT_PUBLIC_TWITTER_BEARER_TOKEN;
-  if (!TWITTER_BEARER_TOKEN) {
-    throw new Error("API key do Twitter não configurada.");
-  }
-
-  const url = `https://api.x.com/2/tweets/search/recent? `;
-  const options = {method: 'GET', headers: {Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`}};
-
-  const response = await fetch(
-    `https://api.x.com/2/tweets/search/recent?query=${encodeURIComponent(query)}`,
-    options,
-  )
-
-    .then((response) => response.json())
-    .then((response) => console.log(response))
-    .catch((err) => console.error(err));
+  // Chama nosso endpoint interno que atua como proxy para o Twitter
+  const response = await fetch(`http://localhost:3000/api/twitter?query=${encodeURIComponent(query)}`);
 
   if (!response.ok) {
     const errorText = await response.text();
