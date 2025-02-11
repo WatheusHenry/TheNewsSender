@@ -81,7 +81,7 @@ export async function getNewsSummary(query, onUpdate) {
     let jsonResponse;
 
     try {
-      console.log(rawContent)
+      console.log(llmResponse)
       jsonResponse = JSON.parse(rawContent);
       summaries.push(jsonResponse);
     } catch (error) {
