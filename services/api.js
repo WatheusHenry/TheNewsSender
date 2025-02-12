@@ -1,96 +1,73 @@
-export async function getNewsSummary(query, onUpdate) {
-  if (!query) {
-    throw new Error("Parâmetro 'query' é obrigatório.");
-  }
+const { tavily } = require('@tavily/core');
 
-  const GNEWS_API_KEY = process.env.NEXT_PUBLIC_GNEWS_API_KEY;
-  if (!GNEWS_API_KEY) {
-    throw new Error("API key do GNews não configurada.");
-  }
+// Helper function to wait between requests
+async function summarizeText(articles,query) {
+  if (!articles.length) return 'Nenhuma notícia disponível para resumo.';
 
-  const gnewsApiUrl = `https://gnews.io/api/v4/top-headlines?q=${encodeURIComponent(query)}&max=3&lang=pt&sortby=publishedAt&token=${GNEWS_API_KEY}`;
-  const newsResponse = await fetch(gnewsApiUrl);
+  const contentToSummarize = articles
+    .map((article, index) => `Notícia ${index + 1}: ${article.title} - ${article.content}`)
+    .join("\n\n");
 
-  if (!newsResponse.ok) {
-    const errorText = await newsResponse.text();
-    throw new Error("Erro ao buscar notícias: " + errorText);
-  }
-
-  const newsData = await newsResponse.json();
-  if (!newsData.articles || newsData.articles.length === 0) {
-    throw new Error("Nenhuma notícia encontrada para essa pesquisa.");
-  }
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "Data não disponível";
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
-  const DEEPSEEK_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-  const DEEPSEEK_API_KEY = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
-  const summaries = [];
-
-  for (const article of newsData.articles.slice(0, 3)) {
-    const prompt = `
-    **Resposta em JSON esperada:**
-    {
-      "title": "${article.title}",
-      "description": "${article.description}",
-      "image": "${article.image}",
-      "date": "${formatDate(article.publishedAt)}",
-      "sourceName": "${article.source?.name || "Fonte não informada"}",
-      "sourceUrl": "${article.source?.url || "Fonte não informada"}",
-      "content": "${article.content || "Sem descrição disponível"}",
-      "tags": "Se necessário, inclua tags relacionadas"
-    }
-
-    **Responda somente em JSON, não inclua explicações ou comentários.**
-  `;
-
-    const llmResponse = await fetch(DEEPSEEK_API_URL, {
-      method: "POST",
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_WEBSITE_URL,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-lite-preview-02-05:free",
-        messages: [{ role: "user", content: prompt }],
-        stream: false // Garante que a resposta venha completa de uma vez
-      })
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [
+          {
+            role: "system",
+            content: `Você é um especialista em notícias e jornalismo. Gere um resumo claro das seguintes notícias em português brasileiro focando no assunto ${query}.`
+          },
+          {
+            role: "user",
+            content: contentToSummarize
+          }
+        ],
+        max_tokens: 5000,
+        temperature: 0.4,
+      }),
     });
 
-    if (!llmResponse.ok) {
-      const errorText = await llmResponse.text();
-      console.error("Erro ao chamar o DeepSeek:", errorText);
-      continue;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Erro da API: ${response.status} - ${JSON.stringify(errorData)}`);
     }
 
-    const llmData = await llmResponse.json();
-    const rawContent = llmData.choices?.[0]?.message?.content.trim();
-
-    // Remove os delimitadores de código caso existam
-    const cleanedContent = rawContent
-      .replace(/^```(json)?\s*/, '')
-      .replace(/\s*```$/, '')
-      .trim();
-
-    let jsonResponse;
-
-    try {
-      console.log(llmResponse)
-      jsonResponse = JSON.parse(cleanedContent);
-      summaries.push(jsonResponse);
-    } catch (error) {
-      console.error("Erro ao parsear o JSON:", error);
-      continue;
-    }
-
-    // Atualiza a interface a cada novo resumo processado
-    onUpdate([...summaries]);
+    const data = await response.json();
+    return data?.choices?.[0]?.message?.content?.trim() || 'Resumo não disponível';
+  } catch (error) {
+    console.error("Erro ao gerar resumo:", error);
+    return 'Resumo não disponível';
   }
 }
+
+
+
+export async function getNews(query) {
+  const client = tavily({ apiKey: process.env.NEXT_PUBLIC_TAVILY_API_KEY });
+
+  try {
+    const response = await client.search(query, {
+      searchDepth: "advanced",
+
+      topic: "news",
+      includeImages: true,
+      maxResults: 9,
+      
+    });
+
+    // Criar um resumo consolidado das notícias em PT-BR
+    const newsSummary = await summarizeText(response.results,query);
+
+    return { ...response, results: response.results, newsSummary };
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    throw error;
+  }
+}
+
