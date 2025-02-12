@@ -74,6 +74,7 @@ export const Navbar = () => {
           ))}
         </ul>
       </NavbarContent> */}
+      <div className="text-sm text-gray-500 bg-blue-100 rounded-xl px-3 py-0.5 absolute font-bold"><p className="text-blue-500">Beta</p> </div>
 
       <NavbarContent
         className="hidden sm:flex basis-1/5 sm:basis-full"
