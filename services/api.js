@@ -54,10 +54,13 @@ export async function getNews(query) {
   try {
     const response = await client.search(query, {
       searchDepth: "advanced",
-
-      topic: "news",
+      // topic: "news",
       includeImages: true,
       maxResults: 9,
+      days: 20,
+      time_range:"m",
+
+
       
     });
 
