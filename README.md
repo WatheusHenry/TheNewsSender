@@ -1,4 +1,6 @@
 # Next.js & HeroUI Template
+![Captura de tela de 2025-02-13 17-15-09](https://github.com/user-attachments/assets/1a28bb6d-0a32-4634-8f8c-d3f81a40018f)
+
 
 This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
 
