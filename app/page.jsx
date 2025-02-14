@@ -26,6 +26,8 @@ export default function Home() {
 
   const handleSearch = async () => {
     if (!query.trim()) return;
+    console.log("Botão Comprar foi clicado!");
+
 
     setLoading(true);
     setTranslating(true);
