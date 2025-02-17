@@ -17,7 +17,7 @@ async function summarizeText(articles,query) {
         'HTTP-Referer': process.env.NEXT_PUBLIC_WEBSITE_URL,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'cognitivecomputations/dolphin3.0-r1-mistral-24b:free',
         messages: [
           {
             role: "system",
