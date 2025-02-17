@@ -17,7 +17,7 @@ async function summarizeText(articles,query) {
         'HTTP-Referer': process.env.NEXT_PUBLIC_WEBSITE_URL,
       },
       body: JSON.stringify({
-        model: 'cognitivecomputations/dolphin3.0-r1-mistral-24b:free',
+        model: 'meta-llama/llama-3-8b-instruct:free',
         messages: [
           {
             role: "system",
